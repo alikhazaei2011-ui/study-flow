@@ -1,0 +1,21 @@
+
+{
+  "name": "StudyFlow - مدیریت مدرسه",
+  "short_name": "StudyFlow",
+  "description": "مدیریت درس ها، تکالیف و امتحانات",
+  "lang": "fa",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f7fc",
+  "theme_color": "#f5f7fc",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
