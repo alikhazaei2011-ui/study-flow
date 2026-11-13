@@ -1,0 +1,389 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#f5f7fc">
+<link rel="manifest" href="manifest.webmanifest">
+<title>StudyFlow | مدیریت مدرسه</title>
+
+<style>
+*{box-sizing:border-box}
+body{
+ margin:0;
+ background:#f5f7fc;
+ color:#293650;
+ font-family:Tahoma,Arial,sans-serif;
+}
+.container{
+ max-width:650px;
+ margin:auto;
+ padding:20px 15px 90px;
+}
+header{
+ display:flex;
+ justify-content:space-between;
+ align-items:center;
+}
+h1{font-size:23px;color:#718fe0}
+h2{font-size:18px}
+p{color:#7d899e;font-size:13px;line-height:2}
+.hero{
+ background:linear-gradient(130deg,#e5edff,#f2eaff);
+ padding:22px;
+ border-radius:22px;
+ margin:22px 0;
+}
+.stats{
+ display:grid;
+ grid-template-columns:repeat(3,1fr);
+ gap:10px;
+}
+.stat,.card{
+ background:white;
+ border-radius:17px;
+ padding:15px;
+ box-shadow:0 5px 20px #253b6410;
+ margin-bottom:12px;
+}
+.stat{
+ text-align:center;
+ font-size:12px;
+ color:#8490a4;
+}
+.number{
+ font-size:25px;
+ color:#718fe0;
+ margin:10px;
+}
+button{
+ border:0;
+ border-radius:11px;
+ padding:11px 14px;
+ background:#7898e8;
+ color:white;
+ font-weight:bold;
+}
+input{
+ width:100%;
+ padding:12px;
+ border:1px solid #e4e9f2;
+ border-radius:11px;
+ margin:7px 0 13px;
+ background:#fbfcff;
+ font-family:inherit;
+}
+label{
+ font-size:12px;
+ color:#7d899e;
+}
+.item{
+ display:flex;
+ align-items:center;
+ gap:10px;
+ padding:12px 0;
+ border-bottom:1px solid #edf0f6;
+}
+.item:last-child{border:0}
+.item div{flex:1;font-size:13px}
+.item small{
+ display:block;
+ color:#8994a8;
+ margin-top:6px;
+}
+.delete{
+ background:#fff0ed;
+ color:#d77e72;
+}
+.done{
+ background:#dff4ed;
+ color:#398e75;
+}
+.tabs{
+ position:fixed;
+ bottom:0;
+ left:0;
+ right:0;
+ display:flex;
+ justify-content:space-around;
+ background:white;
+ padding:12px 4px;
+ border-top:1px solid #edf0f6;
+}
+.tabs button{
+ background:transparent;
+ color:#8591a7;
+ font-size:11px;
+}
+.tabs button.active{color:#718fe0}
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<header>
+ <div>
+  <h1>📚 StudyFlow</h1>
+  <p>دستیار شخصی مدرسه تو</p>
+ </div>
+ <div>🌱</div>
+</header>
+
+<section id="home" class="page active">
+ <div class="hero">
+  <h2>سلام! آماده‌ای؟ 👋</h2>
+  <p>امروز یک قدم به موفقیت تحصیلی نزدیک‌تر شو.</p>
+ </div>
+
+ <div class="stats">
+  <div class="stat">
+   تکالیف باقی‌مانده
+   <div class="number" id="pending">0</div>
+  </div>
+  <div class="stat">
+   امتحانات
+   <div class="number" id="examCount">0</div>
+  </div>
+  <div class="stat">
+   انجام‌شده
+   <div class="number" id="completed">0</div>
+  </div>
+ </div>
+
+ <div>
+  <h2>کارهای پیش رو 📝</h2>
+  <div class="card" id="homeTasks"></div>
+ </div>
+
+ <div>
+  <h2>امتحانات نزدیک 🎓</h2>
+  <div class="card" id="homeExams"></div>
+ </div>
+</section>
+
+<section id="tasks" class="page">
+ <h2>📝 مدیریت تکالیف</h2>
+ <div class="card">
+  <label>عنوان تکلیف</label>
+  <input id="taskTitle" placeholder="مثلاً حل تمرین فیزیک">
+
+  <label>نام درس</label>
+  <input id="taskSubject" placeholder="مثلاً فیزیک">
+
+  <label>مهلت انجام</label>
+  <input id="taskDate" type="date">
+
+  <button onclick="addTask()">ثبت تکلیف +</button>
+ </div>
+ <div class="card" id="taskList"></div>
+</section>
+
+<section id="exams" class="page">
+ <h2>🎓 مدیریت امتحانات</h2>
+ <div class="card">
+  <label>نام درس</label>
+  <input id="examSubject" placeholder="مثلاً شیمی">
+
+  <label>تاریخ امتحان</label>
+  <input id="examDate" type="date">
+
+  <button onclick="addExam()">ثبت امتحان +</button>
+ </div>
+ <div class="card" id="examList"></div>
+</section>
+
+<section id="schedule" class="page">
+ <h2>🗓️ برنامه هفتگی</h2>
+ <div class="card" id="scheduleList"></div>
+</section>
+
+</div>
+
+<nav class="tabs">
+ <button class="active" onclick="showPage('home',this)">🏠 خانه</button>
+ <button onclick="showPage('tasks',this)">📝 تکالیف</button>
+ <button onclick="showPage('exams',this)">🎓 امتحانات</button>
+ <button onclick="showPage('schedule',this)">🗓️ برنامه</button>
+</nav>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
+let exams=JSON.parse(localStorage.getItem('exams')||'[]');
+
+const days=[
+ ['شنبه','فارسی، جغرافیا، فیزیک'],
+ ['یکشنبه','فیزیک، هندسه، شیمی'],
+ ['دوشنبه','نگارش، شیمی، عربی'],
+ ['سه‌شنبه','آزمایشگاه، تفکر، ورزش'],
+ ['چهارشنبه','دینی، ریاضی، آمادگی دفاعی'],
+ ['پنجشنبه','زبان، ریاضی']
+];
+
+function save(){
+ localStorage.setItem('tasks',JSON.stringify(tasks));
+ localStorage.setItem('exams',JSON.stringify(exams));
+ render();
+}
+
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active'));
+ btn.classList.add('active');
+}
+
+function addTask(){
+ let title=document.getElementById('taskTitle').value.trim();
+ let subject=document.getElementById('taskSubject').value.trim();
+ let date=document.getElementById('taskDate').value;
+
+ if(!title||!date){
+  alert('عنوان و تاریخ را وارد کن');
+  return;
+ }
+
+ tasks.push({
+  id:Date.now(),
+  title,
+  subject,
+  date,
+  done:false
+ });
+
+ document.getElementById('taskTitle').value='';
+ document.getElementById('taskSubject').value='';
+ save();
+}
+
+function addExam(){
+ let subject=document.getElementById('examSubject').value.trim();
+ let date=document.getElementById('examDate').value;
+
+ if(!subject||!date){
+  alert('درس و تاریخ را وارد کن');
+  return;
+ }
+
+ exams.push({
+  id:Date.now(),
+  subject,
+  date
+ });
+
+ document.getElementById('examSubject').value='';
+ save();
+}
+
+function toggleTask(id){
+ tasks=tasks.map(t=>
+  t.id===id?{...t,done:!t.done}:t
+ );
+ save();
+}
+
+function removeTask(id){
+ tasks=tasks.filter(t=>t.id!==id);
+ save();
+}
+
+function removeExam(id){
+ exams=exams.filter(e=>e.id!==id);
+ save();
+}
+
+function safe(text){
+ const d=document.createElement('div');
+ d.textContent=text||'';
+ return d.innerHTML;
+}
+
+function dateText(date){
+ return new Date(date+'T00:00:00')
+ .toLocaleDateString('fa-IR');
+}
+
+function daysLeft(date){
+ let n=Math.ceil(
+  (new Date(date+'T00:00:00')-
+  new Date(new Date().toDateString()))/86400000
+ );
+ return n<0?'گذشته':n===0?'امروز':n+' روز مانده';
+}
+
+function taskHTML(t){
+ return `<div class="item">
+ <button class="${t.done?'done':''}"
+ onclick="toggleTask(${t.id})">
+ ${t.done?'✓':'○'}
+ </button>
+ <div>
+ <b>${safe(t.title)}</b>
+ <small>${safe(t.subject)} | ${dateText(t.date)}</small>
+ </div>
+ <button class="delete"
+ onclick="removeTask(${t.id})">حذف</button>
+ </div>`;
+}
+
+function examHTML(e){
+ return `<div class="item">
+ <div>
+ <b>${safe(e.subject)}</b>
+ <small>${dateText(e.date)}</small>
+ </div>
+ <span style="color:#718fe0;font-size:11px">
+ ${daysLeft(e.date)}
+ </span>
+ <button class="delete"
+ onclick="removeExam(${e.id})">حذف</button>
+ </div>`;
+}
+
+function render(){
+ let pending=tasks.filter(t=>!t.done);
+
+ document.getElementById('pending').textContent=pending.length;
+ document.getElementById('completed').textContent=tasks.length-pending.length;
+ document.getElementById('examCount').textContent=exams.length;
+
+ document.getElementById('taskList').innerHTML=
+ tasks.map(taskHTML).join('')||
+ '<p>هنوز تکلیفی ثبت نکردی.</p>';
+
+ document.getElementById('examList').innerHTML=
+ exams.map(examHTML).join('')||
+ '<p>هنوز امتحانی ثبت نکردی.</p>';
+
+ document.getElementById('homeTasks').innerHTML=
+ pending.slice(0,4).map(taskHTML).join('')||
+ '<p>همه تکالیف انجام شده‌اند! 🌟</p>';
+
+ document.getElementById('homeExams').innerHTML=
+ exams.filter(e=>e.date>=new Date().toISOString().slice(0,10))
+ .sort((a,b)=>a.date.localeCompare(b.date))
+ .slice(0,4).map(examHTML).join('')||
+ '<p>امتحان نزدیکی نداری.</p>';
+
+ document.getElementById('scheduleList').innerHTML=
+ days.map(d=>`
+ <div class="item">
+ <div>
+ <b>${d[0]}</b>
+ <small>${d[1]}</small>
+ </div>
+ </div>
+ `).join('');
+}
+
+render();
+
+if('serviceWorker' in navigator){
+ navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+</script>
+</body>
+</html>
